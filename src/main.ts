@@ -57,24 +57,26 @@ const createHitboxes = () => {
     const centerX = list[0] + Math.abs(list[0] - maxValues[index][0]) / 2;
     const centerY = list[1] + Math.abs(list[1] - maxValues[index][1]) / 2;
 
-    let currentHitbox = [];
+    let currentHitbox: [number, number][] = [];
     for (let i = 1; i <= collisionQuality; i++) {
-      // TODO: Check if it is <= or <
+      const oneFourth = collisionQuality / 4;
+      const oneHalf = collisionQuality / 2; //------------- TODO: Make the quality customisable
+      const threeFourths = (collisionQuality / 4) * 3;
 
       let x: number;
       let y: number;
 
-      if (i == 4 || i == 12) {
+      if (i == oneFourth || i == threeFourths) {
         x = centerX;
-      } else if (i > 4 && i < 12) {
+      } else if (i > oneFourth && i < threeFourths) {
         x = centerX - Math.abs(list[0] - maxValues[index][0]) / 2;
       } else {
         x = centerX + Math.abs(list[0] - maxValues[index][0]) / 2;
       }
 
-      if (i == 1 || i == 8 || i == 16) {
+      if (i == 1 || i == oneHalf || i == collisionQuality) {
         y = centerY;
-      } else if (i > 1 && i < 8) {
+      } else if (i > 1 && i < oneHalf) {
         y = centerY - Math.abs(list[0] - maxValues[index][0]) / 2;
       } else {
         y = centerY + Math.abs(list[0] - maxValues[index][0]) / 2;
@@ -91,11 +93,11 @@ const createHitboxes = () => {
 // ---
 
 const draw = () => {
-  context.fillStyle = "black";
+  context.fillStyle = "white";
   context.fillRect(0, 0, context.canvas.width, context.canvas.height);
 
   elements.forEach((element) => {
-    context.fillStyle = "white";
+    context.fillStyle = "black";
     context.beginPath();
 
     if ("verticies" in element) {
@@ -107,29 +109,42 @@ const draw = () => {
 
       context.fill();
     } else {
-      // Circle shape
-      context.arc(element.center[0], element.center[1], element.radius, 0, 2 * Math.PI);
-      context.fill();
+      // TODO: Circle shape hitboxes
+      // context.arc(element.center[0], element.center[1], element.radius, 0, 2 * Math.PI);
+      // context.fill();
     }
   });
 
+  // Center dots
   dots.forEach((location) => {
-    context.fillStyle = "red";
+    context.fillStyle = "green";
     context.beginPath();
     context.arc(location[0], location[1], 3, 0, Math.PI * 2);
     context.closePath();
     context.fill();
   });
 
-  console.log(hitboxDots);
+  // Hitbox outline
   hitboxDots.forEach((list) => {
-    list.forEach((point) => {
-      const xPoint = point[0];
-      const yPoint = point[1];
+    context.fillStyle = "rgba(0, 0, 255, 0.2)";
+    context.strokeStyle = "blue";
+    context.beginPath();
 
-      context.fillStyle = "lightblue";
+    list.forEach((point) => {
+      context.lineTo(point[0], point[1]);
+    });
+    context.closePath();
+    context.stroke();
+    context.fill();
+  });
+
+  // Hitbox vertex dots
+  hitboxDots.forEach((list) => {
+    context.fillStyle = "red";
+
+    list.forEach((point) => {
       context.beginPath();
-      context.arc(xPoint, yPoint, 3, 0, Math.PI * 2);
+      context.arc(point[0], point[1], 3, 0, Math.PI * 2);
       context.closePath();
       context.fill();
     });
@@ -160,10 +175,10 @@ createRectangle([
   [200, 300],
 ]);
 createRectangle([
-  [300, 100],
-  [400, 100],
-  [400, 200],
-  [300, 200],
+  [400, 250],
+  [500, 200],
+  [500, 350],
+  [400, 400],
 ]);
 createCircle([400, 400], 50);
 createHitboxes();
