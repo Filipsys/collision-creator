@@ -21,7 +21,6 @@ let elements: (VertexShape | CircleShape)[] = [];
 let dots: [number, number][] = [];
 let hitboxDots: [number, number][][] = [];
 const collisionQuality = 16;
-const degreeCheck = 10;
 
 const createRectangle = (inputVerticies: number[][]) => {
   elements.push({
@@ -36,7 +35,7 @@ const createCircle = (centerLoc: [number, number], radiusAmount: number) => {
   });
 };
 
-const createHitboxes = () => {
+const findFurthestPoints = () => {
   const vertexShapes = elements.filter((element) => "verticies" in element);
   const vertexValues = vertexShapes.map((element) => element.verticies);
 
@@ -53,41 +52,36 @@ const createHitboxes = () => {
   let minValues: [number, number][] = [];
   xMinValues.forEach((_, index) => minValues.push([xMinValues[index], yMinValues[index]]));
 
-  minValues.forEach((list, index) => {
-    const centerX = list[0] + Math.abs(list[0] - maxValues[index][0]) / 2;
-    const centerY = list[1] + Math.abs(list[1] - maxValues[index][1]) / 2;
+  // ---
 
-    let currentHitbox: [number, number][] = [];
-    for (let i = 1; i <= collisionQuality; i++) {
-      const oneFourth = collisionQuality / 4;
-      const oneHalf = collisionQuality / 2; //------------- TODO: Make the quality customisable
-      const threeFourths = (collisionQuality / 4) * 3;
+  const results = [];
+  const angleIncrements = 360 / collisionQuality;
 
-      let x: number;
-      let y: number;
+  for (let i = 0; i < collisionQuality; i++) {
+    minValues.forEach((list, index) => {
+      const centerX = list[0] + Math.abs(list[0] - maxValues[index][0]) / 2;
+      const centerY = list[1] + Math.abs(list[1] - maxValues[index][1]) / 2;
 
-      if (i == oneFourth || i == threeFourths) {
-        x = centerX;
-      } else if (i > oneFourth && i < threeFourths) {
-        x = centerX - Math.abs(list[0] - maxValues[index][0]) / 2;
-      } else {
-        x = centerX + Math.abs(list[0] - maxValues[index][0]) / 2;
+      const startAngle = i * angleIncrements;
+      const endAngle = (i + 1) * angleIncrements;
+      let furthestPoint;
+      let maxDistance = 0;
+
+      const angle = Math.atan2(list[1] - centerY, list[0] - centerX) * (180 / Math.PI);
+      const normalisedAngle = (angle + 360) % 360;
+
+      if (normalisedAngle >= startAngle && normalisedAngle < endAngle) {
+        const distance = Math.sqrt((list[0] - centerX) ** 2 + (list[1] - centerY) ** 2);
+
+        if (distance > maxDistance) {
+          maxDistance = distance;
+          furthestPoint = list;
+        }
       }
-
-      if (i == 1 || i == oneHalf || i == collisionQuality) {
-        y = centerY;
-      } else if (i > 1 && i < oneHalf) {
-        y = centerY - Math.abs(list[0] - maxValues[index][0]) / 2;
-      } else {
-        y = centerY + Math.abs(list[0] - maxValues[index][0]) / 2;
-      }
-
-      currentHitbox.push([x, y]);
-    }
-    hitboxDots.push(currentHitbox);
-
-    dots.push([centerX, centerY]);
-  });
+      // hitboxDots.push();
+      dots.push([centerX, centerY]);
+    });
+  }
 };
 
 // ---
@@ -181,6 +175,6 @@ createRectangle([
   [400, 400],
 ]);
 createCircle([400, 400], 50);
-createHitboxes();
+findFurthestPoints();
 
 window.requestAnimationFrame(loop);
